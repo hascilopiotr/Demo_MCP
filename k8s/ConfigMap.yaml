@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: weather-service-config
+data:
+  DEFAULT_CITY: "Katowice"
+  UNITS: "metric"
+  API_URL: "http://api.openweathermap.org/data/2.5/weather"
