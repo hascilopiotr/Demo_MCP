@@ -1,7 +1,6 @@
 from mcp.server.fastmcp import FastMCP
 import os
 import httpx
-import datetime
 import requests
 
 mcp = FastMCP("demo-server", host="0.0.0.0", port=8000)
