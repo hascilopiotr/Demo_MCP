@@ -15,26 +15,49 @@ spec:
       labels:
         app: mcp-demo-server
     spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
       containers:
         - name: mcp-server
           image: demo-server:latest
           imagePullPolicy: Never
           ports:
             - containerPort: 8000
-              name: mcp
+              protocol: TCP
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
           env:
+            - name: MCP_TRANSPORT
+              value: "streamable-http"
+        - name: weather-app
+          image: weather-app:latest
+          imagePullPolicy: Never
+          env:
+            - name: CITY
+              valueFrom:
+                configMapKeyRef:
+                  name: weather-service-config
+                  key: DEFAULT_CITY
             - name: OPENWEATHER_API_KEY
               valueFrom:
                 secretKeyRef:
                   name: weather-api-secret
                   key: API_KEY
-          livenessProbe:
-            tcpSocket:
-              port: 8000
-            initialDelaySeconds: 15
-            periodSeconds: 30
-          readinessProbe:
-            tcpSocket:
-              port: 8000
-            initialDelaySeconds: 5
-            periodSeconds: 10

@@ -1,34 +1,27 @@
 from mcp.server.fastmcp import FastMCP
 import os
 import httpx
-import sys
+import datetime
+import requests
 
-print("[INFO] Starting MCP server...", file=sys.stderr)
-
-# Load API key
-api_key = os.getenv("OPENWEATHER_API_KEY", "")
-print(f"[INFO] API key loaded: {bool(api_key)}", file=sys.stderr)
-
-# Initialize MCP server
-try:
-    mcp = FastMCP("demo-server", host="0.0.0.0", port=8000)
-    print("[INFO] FastMCP initialized", file=sys.stderr)
-except Exception as e:
-    print(f"[ERROR] Failed to initialize FastMCP: {e}", file=sys.stderr)
-    sys.exit(1)
+mcp = FastMCP("demo-server", host="0.0.0.0", port=8000)
 
 def get_api_key():
-    """Helper to fetch latest API key from environment."""
-    return os.getenv("OPENWEATHER_API_KEY", "")
+    """Helper to ensure we always fetch the latest env variable."""
+    return os.getenv("OPENWEATHER_API_KEY")
 
 @mcp.tool()
 def check_api_key_status():
     """Check if the OpenWeather API key is loaded."""
     key = get_api_key()
     if key:
-        masked = f"{key[:4]}{'*' * max(0, len(key) - 8)}{key[-4:]}"
-        return {"status": "loaded", "api_key": masked, "length": len(key)}
+        masked = f"{key[:4]}{'*' * (len(key) - 8)}{key[-4:]}"
+        return {"status": "loaded", "api_key": masked}
     return {"status": "not_loaded", "error": "OPENWEATHER_API_KEY not set"}
+
+
+
+
 
 @mcp.tool()
 def get_weather(city: str, api_key_override: str = ""):
@@ -52,10 +45,7 @@ def get_weather(city: str, api_key_override: str = ""):
     except Exception as e:
         return {"error": str(e)}
 
+
 if __name__ == "__main__":
-    try:
-        print("[INFO] Starting mcp.run() with streamable-http transport...", file=sys.stderr)
-        mcp.run(transport="streamable-http")
-    except Exception as e:
-        print(f"[ERROR] Fatal error in mcp.run(): {e}", file=sys.stderr)
-        sys.exit(1)
+    mcp.run(transport="streamable-http")
+
