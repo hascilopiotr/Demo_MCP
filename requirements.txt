@@ -1,0 +1,2 @@
+# requirements.txt
+mcp[cli]>=1.9.0
